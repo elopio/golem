@@ -1,0 +1,56 @@
+name: golem
+version: master
+summary: worldwide supercomputer
+description: |
+  Golem is a global, open sourced, decentralized supercomputer that anyone can
+  access. It's made up of the combined power of user's machines, from personal
+  laptops to entire datacenters.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: classic
+
+apps:
+  app:
+    command: desktop-launch golemapp --datadir $SNAP_USER_DATA
+    plugs: [unity7, network]
+    aliases: [golemapp]
+  cli:
+    command: golemcli
+    plugs: [network]
+    aliases: [golemcli]
+
+parts:
+  golem:
+    source: .
+    plugin: python
+    python-version: python2
+    build-packages:
+      - openssl
+      - python-dev
+      - python-pyqt5
+      - qt5-default
+      - pyqt5-dev-tools
+      - libffi-dev
+      - pkg-config
+      - libjpeg-dev
+      - libopenexr-dev
+      - libssl-dev
+      - autoconf
+    stage-packages:
+      - python-pathlib
+      - python-pyqt5
+      - python-tz
+    after:
+      - freeimage
+      - desktop-qt5
+  freeimage:
+    source: http://golem.network/FreeImage.zip
+    plugin: nil
+    build-packages: [g++]
+    build: |
+      cd FreeImage
+      make -j$(SNAPCRAFT_PARALLEL_BUILD_COUNT)
+    install: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/
+      cp FreeImage/Dist/* $SNAPCRAFT_PART_INSTALL/usr/lib/
+      ln -s $SNAPCRAFT_PART_INSTALL/usr/lib/libfreeimage*.so $SNAPCRAFT_PART_INSTALL/usr/lib/libfreeimage.so
